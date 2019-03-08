@@ -245,5 +245,180 @@
 	}
 `
 
+####2.归并排序
+```c++
+
+#include<iostream>
+#include <vector>
+using namespace std;
+
+// 重命名数组
+typedef vector<int> pvArr;
+
+
+// c++ int数组实现, 递归实现
+class solution
+{
+public:
+
+    /*
+    src - 排序数组
+    tmp - 临时数组
+    left - 数组起始下标，从0开始数
+    right - 数组边界下标，从0开始数
+    */ 
+    void merge_sort(int src[], int tmp[], int left, int right)
+    {
+        // 非法检测
+        if ( (0 > left) || (0 > right) )
+            return;
+
+        if ( (nullptr == src) || (NULL == src) )
+            return;
+        
+        if ( (nullptr == tmp) || (NULL == tmp) )
+            return;
+        
+        // 
+        if (left < right)
+        {
+            int mid = (left + right ) / 2;
+            merge_sort(src, tmp, left, mid);
+            merge_sort(src, tmp, mid + 1, right);
+            merge_array(src, tmp, left, right);
+        }
+    }
+
+private:
+    /*
+    src - 排序数组
+    tmp - 临时数组
+    left - 数组起始下标，从0开始数
+    right - 数组边界下标，从0开始数
+    */ 
+    void merge_array(int src[], int tmp[], int left,  int right)
+    {
+        // 计算得到中间的下标位置
+        int mid = (left + right ) / 2;
+
+        // 从左边开始的索引， 便于从数组左边开始取数
+        int left_index = left;
+
+        // 从右边开始的索引， 便于从数组中间开始取数
+        int right_index = mid + 1;
+
+        // 临时数组存放数据的有效个数
+        int min_index = 0;
+        while ( (left_index <= mid) && (right_index <= right))
+        {
+            // 比左边还大，取左边的数放入临时缓冲
+            if (src[left_index] < src[right_index])
+                tmp[min_index++] = src[left_index++];
+            else
+                tmp[min_index++]  = src[right_index++];
+        }
+
+        // 继续遍历数组的左边，直到中间结束，
+        while (left_index <= mid)
+            tmp[min_index++] = src[left_index++];
+        
+        // 继续遍历数组右边剩下的部分元素 
+        while (right_index <= right)
+            tmp[min_index++] = src[right_index++];
+        
+        // 将排序后的结果放入源数组中
+        for (int i = 0; i < min_index; i++)
+            src[left + i] = tmp[i];
+    }
+};
+
+
+class solution2
+{
+public:
+    /*
+    src - 待排序数组
+    left - 数组的起始下标，从0 开始数
+    right - 数组的右边界下标，从0开始数
+    */
+    void merge_sort(pvArr &src, int left, int right)
+    {
+        if ( (0 > left) || (0 > right) )
+            return;
+        
+        if (left < right)
+        {
+            int mid = (left + right) / 2;
+            merge_sort(src, left, mid);
+            merge_sort(src, mid+1, right);
+            merge(src, left, right);
+        }
+    }
+
+private:
+    /*
+    src - 待排序数组
+    left - 数组的起始下标，从0 开始数
+    right - 数组的右边界下标，从0开始数
+    */
+    void merge(pvArr &src, int left, int right)
+    {
+        int mid = (left + right ) / 2;
+        int left_index = left;
+        int right_index = mid + 1;
+        pvArr tmparr;
+
+        int min_index = 0;
+        while ( (left_index <= mid) && (right_index <= right) )
+        {
+            min_index = (src[left_index] < src[right_index]) ? left_index++ : right_index++;
+            tmparr.push_back(src[min_index]);
+        }
+
+        while (left_index <= mid)
+            tmparr.push_back(src[left_index++]);
+
+        while (right_index <= right)
+            tmparr.push_back(src[right_index++]);
+
+        for (int i = 0; i < tmparr.size(); i++)
+        {
+            src[left + i] = tmparr[i];
+        }
+    }
+};
+
+int main()
+{
+    // solution ssssssss;
+    // int int_arr[]   = {8, 4, 5, 7,    1, 3, 6, 2};
+    // int int_tmp[8] = {0};
+
+    // 构造测试数据
+    pvArr arr;
+    arr.push_back(8);
+    arr.push_back(4);
+    arr.push_back(5);
+    arr.push_back(2);
+    arr.push_back(1);
+    arr.push_back(3);
+    arr.push_back(6);
+    arr.push_back(2);
+
+    cout << "-------------------------" << endl;
+
+    // 执行归并排序
+    solution2 sl2;
+    sl2.merge_sort(arr, 0, arr.size() - 1);
+
+    // 输出
+    int size = arr.size();
+    for (int i = 0; i < size; i++)
+        cout << "i = " << i + 1 << ", num = " << arr[i] << endl;
+
+    return 0;
+}
+```c++
+
 
 
