@@ -1,5 +1,6 @@
 # base_data_structure
 	记录常用的数据结构:
+		排序
 		单向链表
 		双向链表
 		栈
@@ -12,7 +13,7 @@
 `欢迎指正`
 
 #### 1.二叉树
-`
+```c++
 	
 	#include <iostream>
 	using namespace std;
@@ -243,7 +244,7 @@
 
 		return 0;
 	}
-`
+```
 
 ####2.归并排序
 ```c++
