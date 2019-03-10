@@ -1,3 +1,242 @@
+
+# 自己实现vector动态数组（c++）
+	##仅实现了部分功能， 后续更新##
+	## 欢迎指正##	
+
+```c++
+#ifndef _my_vector
+#define _my_vector
+
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+
+
+// 定义了异常
+
+class UnderflowException { };  
+class IllegalArgumentException { };  
+class ArrayIndexOutOfBoundsException { };  
+class IteratorOutOfBoundsException { };  
+class IteratorMismatchException { };  
+class IteratorUninitializedException { };  
+class NullItemException{};
+
+
+template <typename T> 
+
+
+class myVector
+{
+
+public:
+    typedef T* iterator;
+
+private:
+    T *data;
+    int len;
+    int size;
+
+    int cur_index;
+
+public:
+    // 无参数构造函数
+    myVector():data(NULL), len(0), size(0)
+    {
+        cur_index = 0;
+    }
+
+    virtual ~myVector()
+    {
+        if (NULL != data)
+        {
+            delete []data;
+            data = NULL;
+        }
+    }
+
+    // 拷贝构造函数
+    myVector(const myVector& tmp)
+    {
+        if (this == &tmp)
+            return;
+        
+        data = new(std::nothrow) T[tmp.len];
+        if (NULL == data)
+            return;
+
+        for (int i = 0; i < tmp.size; i++)
+            data[i] = tmp.data[i];
+        
+        len = tmp.len;
+        size = tmp.size;
+    }
+
+    // 重载 []
+    T & operator[](int index)
+    {
+        if ( (0 > index) || (size < index) )
+            throw IllegalArgumentException();
+
+        if (NULL    == data)
+            throw NullItemException();
+
+        return data[index];
+    }
+
+    // 重载 = 
+    const myVector & operator = (const myVector &tmp)
+    {
+        if (this != &tmp)
+        {   
+            if (NULL != data)
+                delete []data;
+
+            size    = tmp.size;
+            len     = tmp.len;
+            data = new(std::nothrow) T[len];
+            memcpy(data, tmp.data, len);
+        }
+
+        return *this;
+    }
+
+    //  
+    const myVector& push_back(const T tmp)
+    {
+        // 若当前缓冲区无法存下，则需要新开辟
+        if (len <= size)
+        {
+            T *new_data = new(std::nothrow) T[len * 2 + 1];
+            memcpy(new_data, data, len * sizeof(T));
+            delete []data;
+            data = new_data;
+            len = 2 * len + 1;
+        }
+
+        data[size++] = tmp;
+        return *this;
+    }
+
+    void resize(int new_size)
+    {
+        if (new_size > size)
+            reverse((2 * new_size) + 1);
+        
+        size = new_size;
+    }
+
+    void reverse(int new_size)
+    {
+        T *old_data = data;
+
+        int num2copy = (new_size < size) ?  new_size : size;
+        len = new_size;
+
+        data = new(std::nothrow)T [len];
+        if (NULL != data)
+        {
+            memcpy(data, old_data, num2copy);
+            size = num2copy;
+
+            delete []old_data;
+            old_data = NULL;
+        }
+    }
+
+    
+
+    void pop_back()
+    {
+        if (0 == size)
+            throw UnderflowException();
+        
+        size--;
+    }
+
+    iterator begin()
+    {
+        cur_index = 0;
+        return &data[cur_index];
+    }
+
+    iterator end()
+    {
+        return &data[size-1];
+    }
+
+    iterator next()
+    {
+        cur_index++;
+        if ( (0 > cur_index) || (cur_index > size) )
+            throw ArrayIndexOutOfBoundsException();
+        return &data[cur_index];
+    }
+
+
+
+    // 
+    int get_size()
+    {
+        return size;
+    }
+
+};
+
+
+struct A
+{
+    int data;
+    void zero()
+    {
+        data = 0;
+    }
+
+    A()
+    {
+        zero();
+    }
+
+    A(int val) :data(val)
+    {
+        
+    }
+};
+
+
+int main()
+{
+    myVector<A> aaa;
+
+    aaa.push_back(A(1));
+    aaa.push_back(A(2));
+    aaa.push_back(A(3));
+    aaa.push_back(A(4));
+    aaa.push_back(A(5));
+
+    for (int i = 0; i< 5; i++)
+    {
+        cout << "i = " << i  << ", val = " << aaa[i].data << endl;
+    }
+
+    cout << "size = " << aaa.get_size() << endl;
+
+    return 0;
+}
+
+
+
+#endif //_my_vector
+```
+
+
+
+
+
+
 # base_data_structure
 	记录常用的数据结构:
 		排序
