@@ -252,237 +252,467 @@ int main()
 `欢迎指正`
 
 #### 1.二叉树
+##### 1.1 初步实现二叉树的基本功能，包括：添加结点、查找结点、3中遍历结点、释放树
+#### 1.2 更新时间:2019-3-13 22:21 更新部分功能：
+		·查找某个结点的父节点
+		·查找最小值与最大值
 ```c++
 	
-	#include <iostream>
-	using namespace std;
-	struct node
-	{
-		// 数据区
-		int data;
+#include <iostream>
+using namespace std;
 
-    	// 左节点
-    	node *lc;
+struct node 
+{
+    // 数据域
+    int data;
 
-    	// 右节点
-    	node *rc;
+    // 左节点
+    node *lc;
 
-    	node ():data(0), lc(nullptr), rc(nullptr){}
-	};
+    // 右结点
+    node *rc;
+
+    // 构造函数
+    node()
+        : data(0)
+        , lc(NULL)
+        , rc(NULL)
+    {
+    }
+};
 
 
-	// 二叉树
-	class btree	
-	{
-	public:
-		// 构造函数
-		btree():root(nullptr), size(0){}
-		virtual ~ btree(){}
-		
-		// 插入节点。 data 为插入值
-		void insert(int data)
-		{
-			root = insert_node(root, data);
-		}
+// bst
+class bstree
+{
+public:
+    enum
+    {
+        hmax_size_32767     = 32767,
+        hmin_size_0         = 0,
+    };
 
-		// 删除整棵树
-		void remove()
-		{
-			cout << "remove " << endl;
-			remove_node(root);
-		}
-		
-		// 前序遍历(先序遍历)
-		void pre_order_traverse()
-		{
-			cout << "pre_order_traverse" << endl;
-			pre_order_traverse_node(root);
-			cout << endl << endl;
-		}
+public:
 
-		// 中序遍历
-		void in_order_traverse()
-		{
-			cout << "in_order_traverse" << endl;
-			in_order_traverse_node(root);
-			cout << endl << endl;
-		}	
-		
-		// 后续遍历
-		void post_order_traverse()
-		{
-			cout << "post_order_traverse" << endl;
-			post_order_traverse_node(root);
-			cout << endl << endl;
-		}
-		
-		// 获取当前树的节点数
-		int get_size()
-		{
-			return size;
-		}
+    // 构造函数
+    bstree()
+        : root(NULL)
+        , size(0)
+    {
+    }
 
-		// 递归查找大于data的最小节点
-		node * get_min_ceiling(int data)
-		{
-			return get_min_ceiling_node(root, data);
-		}
+    // 析构函数
+    virtual ~bstree(){}
+    
+    int get_size()
+    {
+        return size;
+    }
 
-		// 非递归查找大于data的最小节点
-		node *find_min_ceiling(int key) const
-		{
-			if (nullptr == root)
-			{
-				cout << "find ceiling is error, root is null" << endl;
-				return nullptr;
-			}
-			node *cur_node = root;
-			node *parent_node = nullptr;
-			
-			while (cur_node)
-			{
-				if (cur_node->data <= key)
-					cur_node = cur_node->rc;
-				else
-				{
-					parent_node = cur_node;
-					cur_node = cur_node->lc;
-				}
-			}
-		
-			return parent_node;
-		}
-		
-	private:
-		void add_size()
-		{
-			if (32767 < size)
-				return;
-			size++;
-		}
-		
-		void dec_size()
-		{
-			if (0 == size)
-				return;
-			size--;
-		}
+    // 插入结点
+    void insert_node(int data)
+    {
+        int cur_size = get_size();
+        if (hmax_size_32767 == cur_size)
+        {
+            cout << "insert node error, the size of the tree is max" << endl;
+            return ;
+        }
+        root = insert(root, data);
+    }
 
-		node* insert_node(node *proot, int data)
-		{
-			if ( (nullptr == proot) || (NULL == proot))
-			{
-				proot = new node;
-				if ( (nullptr != proot ) && (NULL != proot))
-				{
-					proot->data = data;
-					add_size();
-				}
-			}
+    // 先序遍历（前序遍历）
+    void pre_order()
+    {
+        pre_order_traverse(root);
+    }
 
-			// 插入的值比当前节点值大
-			else if (data > proot->data)
-				proot->rc = insert_node(proot->rc, data);
-			else if (data < proot->data)
-				proot->lc = insert_node(proot->lc, data);
+    // 中序遍历
+    void in_order()
+    {
+        in_order_traverse(root);
+    }
 
-			return proot;
-		}
+    // 后序遍历
+    void last_order()
+    {
+        last_order_traverse(root);
+    }
 
-		void remove_node(node *proot)
-		{
-			if ( (nullptr == proot) || (NULL == proot))
-				return;
-				
-			remove_node(proot->lc);
-			remove_node(proot->rc);
-			delete proot;
-			dec_size();
+    /*
+        查找某个结点
+        int key - 查找结果
 
-			if ( 0 == get_size())		
-				root = nullptr;
-		}
-		
-		void pre_order_traverse_node(node *proot)
-		{
-			if ((nullptr == proot) || (NULL == proot))
-				return;
-			
-			cout << proot->data << ",  ";
-			pre_order_traverse_node(proot->lc);
-			pre_order_traverse_node(proot->rc);
-		}
+        返回值：
+            NULL : 可能为root为空 或者 没有找到
+            != NULL, 找到结点
+    */
+    node* query(int key)
+    {
+        if (NULL == root)
+        {
+            cout << "query error, root = null" << endl;
+            return NULL;
+        }
 
-		void in_order_traverse_node(node *proot)
-		{
-			if ((nullptr == proot) || (NULL == proot))
-				return;
-			
-			in_order_traverse_node(proot->lc);
-			cout << proot->data << ",   ";
-			in_order_traverse_node(proot->rc);
-		}
-		
-		void post_order_traverse_node(node *proot)
-		{
-			if ((nullptr == proot) || (NULL == proot))
-				return;
-			
-			post_order_traverse_node(proot->lc);
-			post_order_traverse_node(proot->rc);
-			cout << proot->data << ",   ";
+        return query_node(root, key);
+    }
 
-		}
-		
-		node* get_min_ceiling_node(node *proot, int data)
-		{
-			if(nullptr == proot)
-				return nullptr;
+    // 删除树
+    void remove_all()
+    {
+        if (NULL == root)
+        {
+            cout << "remove all failed, root = null" << endl;
+            return;
+        }
+        
+        remove_all(root);
 
-			if ( proot->data <= data)
-				return get_min_ceiling_node(proot->rc, data); 
-			else 
-			{
-				node *tmp_node = get_min_ceiling_node(proot->lc, data);
-				return tmp_node ? tmp_node : proot;
-			}            
-		}
+        int cur_size = get_size();
+        if (0 == cur_size)
+            root = NULL;
+    }
 
-	private:
-		node *root;
-		int size;
-	};
+    // 删除某个结点
+    void remove_node(int del_data)
+    {
+        if (NULL == root)
+        {
+            cout << "remove node error, root = null" << endl;
+            return;
+        }
 
-	int main()
-	{
-		btree tree;
-		tree.insert(8);
-		tree.insert(6);
-		tree.insert(4);
-		tree.insert(2);
-		tree.insert(0);
-		tree.insert(-2);
-		
-		tree.pre_order_traverse();
-		tree.in_order_traverse();
-		tree.post_order_traverse();
+        remove_node(root, del_data);
+    }
 
-		int ceil = 0;
-		cout << "input ceiling num = ";
-		cin >> ceil;
-		node *tmp   = nullptr;
-		tmp         = tree.find_min_ceiling(ceil);
-		cout << "get ceiling " << ceil << " is = ";
-	
-		if (nullptr == tmp)
-			cout << "null" << endl;
-		else
-			cout << tmp->data << endl;
-		
-		tree.remove();
+    // 返回以proot为根结点的最小结点
+    node *get_min_node(node *proot)
+    {
+        if (NULL == proot->lc)
+            return proot;
 
-		return 0;
-	}
+        return get_min_node(proot->lc);
+    }
+
+    // 返回以proo为根节点的最大结点
+    node *get_max_node(node *proot)
+    {
+        if (NULL == proot->rc)
+            return proot;
+        
+        return get_max_node(proot->rc);
+    }
+
+    // 返回根节点
+    node *get_root_node()
+    {
+        return root;
+    }
+
+    // 返回proot结点的父节点
+    node *get_parent_node(int key)
+    {
+        // 当前结点
+        node *cur_node = NULL;
+        // 父节点
+        node *parent_node = NULL;
+
+        cur_node = root;
+
+        // 标记是否找到
+        bool is_find = false;
+        while (cur_node)
+        {
+            if (key == cur_node->data)
+            {
+                is_find = true;
+                break;
+            }
+
+            // 因为比当前结点的值还要小，所以需要查找当前结点的左子树
+            else if (key < cur_node->data)
+            {
+                parent_node = cur_node;
+                cur_node = cur_node->lc;
+            }
+            // 同上， 查找当前结点的右子树
+            else if (key > cur_node->data)
+            {
+                parent_node = cur_node;
+                cur_node    = cur_node->rc;
+            }
+        }
+
+        return (true == is_find)?  parent_node :  NULL; 
+    }
+
+    // 查找某个结点为根节点的最结点
+
+private:
+
+    void remove_node(node *proot, int del_data)
+    {
+        node *find_node = query(del_data);
+        node *del_node = NULL;
+
+        if(NULL == find_node)
+        {
+            cout << "delete failed, may root is null or " << del_data << " not exist" << endl;
+            return;
+        }
+
+        // 1、若删除结点是叶子结点, 直接删除叶子结点，并置为空
+        if ( (NULL == proot->lc) && (NULL == proot->rc) )
+            del_node = proot;
+
+        // 2、当前删除结点仅包含一个子节点（左子结点或者右子结点）
+        else if (    (( NULL != proot->lc) && (NULL == proot->rc)) || 
+                    (( NULL == proot->lc) && (NULL == proot->rc)) 
+                )
+        {
+            // 2.1 仅有左子结点
+            if (( NULL != proot->lc) && (NULL == proot->rc))
+            {
+
+            }
+
+            // 2.2 仅有右子结点
+            else if (( NULL == proot->lc) && (NULL == proot->rc))
+            {
+
+            }
+        }
+
+    }
+
+
+    //查找某个值
+    node *query_node(node *proot, int key)
+    {
+        if (NULL == proot)
+        {
+            return proot;
+        }
+
+        if (proot->data == key)
+            return proot;
+        else if (proot->data > key)
+        {
+            return query_node(proot->lc, key);
+        }
+        else if (proot->data < key)
+        {
+            return query_node(proot->rc, key);
+        }
+        
+        return NULL;
+    }
+
+    // 后序遍历删除所有结点
+    void remove_all(node *proot)
+    {
+        if (NULL != proot)
+        {
+            remove_all(proot->lc);
+            remove_all(proot->rc);
+            delete proot;
+
+            dec_size();
+        }
+    }
+
+    // 先序遍历
+    void pre_order_traverse(node *proot)
+    {
+        if (NULL != proot)
+        {
+            cout << proot->data << ",   "; 
+            pre_order_traverse(proot->lc);
+            pre_order_traverse(proot->rc);
+        }
+    }
+
+    // 中序遍历
+    void in_order_traverse(node *proot)
+    {
+        if (NULL != proot)
+        {
+            in_order_traverse(proot->lc);
+            cout << proot->data << ",   "; 
+            in_order_traverse(proot->rc);
+        }
+    }
+
+    // 后续遍历
+    void last_order_traverse(node *proot)
+    {
+        if (NULL != proot)
+        {
+            last_order_traverse(proot->lc);
+            last_order_traverse(proot->rc);
+            cout << proot->data << ",   ";
+        }
+    }
+
+    // 插入结点
+    node *insert(node *proot, int data)
+    {
+        // 结点不存在， 则创建
+        if (NULL == proot)
+        {
+            node *new_node = new(std::nothrow) node;
+            if (NULL != new_node)
+            {
+                new_node->data = data;
+                proot = new_node;
+                
+                // 结点+1；
+                add_size();
+            }
+
+            return proot;
+        }
+
+        //  插入值比当前结点值还要小， 则应该插入到当前节点的左边
+        if (proot->data > data)
+        {
+            proot->lc = insert(proot->lc, data);
+        }
+        // 插入之比当前结点值还要打，则应该插入到当前结点的右边
+        else if (proot->data < data)
+        {
+            proot->rc = insert(proot->rc, data);
+        }
+
+        // 相等，则不插入结点。
+
+        return proot;
+    }
+
+    // size + 1
+    void add_size()
+    {
+        if (hmax_size_32767 == size)
+            return ;
+        size++;
+    }
+
+    // size - 1
+    void dec_size()
+    {
+        if ( hmin_size_0 == size)
+        {
+            return ;
+        }
+
+        size--;
+    }
+
+private:
+    // 根结点
+    node *root;
+
+    // 当前树的结点个数
+    int size;
+};
+
+
+
+int main()
+{
+    // 构造测试数据
+    bstree tree;
+    tree.insert_node(5);
+
+    tree.insert_node(3);
+    tree.insert_node(1);
+    tree.insert_node(4);
+
+    tree.insert_node(7);
+    tree.insert_node(10);
+    tree.insert_node(6);
+    tree.insert_node(11);
+
+
+    // 输出结点个数
+    cout << "cur size = " << tree.get_size() << endl;
+
+    // 前序遍历
+    cout << "pre order" << endl;
+    tree.pre_order();
+    cout << endl;
+
+    // 中序遍历
+    cout << endl << "in order " << endl;
+    tree.in_order();
+    cout << endl;
+
+    // 后序遍历
+    cout << endl << "last order" << endl;
+    tree.last_order();
+    cout << endl;
+
+    // 输出最大结点
+    node *node_max = tree.get_max_node(tree.get_root_node());
+    if (NULL != node_max)
+    {
+        cout << "tree's max value is = " <<   node_max->data << endl;
+    }
+    else
+    {
+        cout << "tree is null" << endl;
+    }
+
+    // 输出最小结点
+    node *node_min = tree.get_min_node(tree.get_root_node());
+    if (NULL != node_max)
+    {
+        cout << "tree's max value is = " <<   node_min->data << endl;
+    }
+    else
+    {
+        cout << "tree is null" << endl;
+    }
+
+    
+    // 查找某个节点
+    int find_key = 0;
+    cout << "input find key = ";
+    cin >> find_key;
+
+    node *find_node = tree.query(find_key);
+    if (NULL != find_node)
+    {
+        cout << find_key << " has existed, data =  " << find_node->data << endl;
+    }
+    else
+    {
+        cout << find_key << "was not find" << endl;
+    }
+
+    // 查找某个结点的父节点
+    cout << endl << endl << "请输入要查找的结点的:";
+    int find_parent = 0;
+    cin >> find_parent;
+    node *parent = tree.get_parent_node(find_parent);
+    if (NULL != parent)
+        cout << endl << find_parent << " parent node is " << parent->data  << endl;
+    else
+        cout << endl << "not find parent node" << endl;
+
+    // 释放所有结点
+    cout << endl << "destroy" << endl;
+    tree.remove_all();
+
+    cout << "cur size = " << tree.get_size() << endl;
+
+    return 0;
+}
+
+
+
+
 ```
 
 ####2.归并排序
@@ -658,7 +888,7 @@ int main()
 
     return 0;
 }
-```c++
+```
 
 
 
