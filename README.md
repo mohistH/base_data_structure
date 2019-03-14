@@ -1,5 +1,13 @@
+### 更新说明:
+#### 1.3 更新时间：2019-3-14 21:48，详见 下文 1.3 二叉树 
+		·补充并完善删除某个结点函数 remove_node(int del_data);
+		·参考《算法导论》实现
 
-# 自己实现vector动态数组（c++）
+
+
+
+
+#### 自己实现vector动态数组（c++）
 	##仅实现了部分功能， 后续更新##
 	## 欢迎指正##	
 
@@ -256,6 +264,9 @@ int main()
 #### 1.2 更新时间:2019-3-13 22:21 更新部分功能：
 		·查找某个结点的父节点
 		·查找最小值与最大值
+#### 1.3 更新时间：2019-3-14 21:48， 
+		·补充并完善删除某个结点函数 remove_node(int del_data);
+		·参考《算法导论》实现
 ```c++
 	
 #include <iostream>
@@ -383,7 +394,132 @@ public:
             return;
         }
 
-        remove_node(root, del_data);
+        node *parent_node   = NULL;
+        node *del_node      = root;
+
+        // 找到删除结点的父节点与删除结点
+        while (del_node)
+        {
+            if (del_data == del_node->data)
+                break;
+            else if (del_data > del_node->data)
+            {
+                parent_node = del_node;
+                del_node    = del_node->rc;
+            }
+            else if (del_data < del_node->data)
+            {
+                parent_node = del_node;
+                del_node = del_node->lc;
+            }
+        }
+
+        // 若没有找到要删除的结点
+        if (NULL == del_node)
+        {
+            cout << "remove node error, " << del_data << " was not find" << endl;
+            return;
+        }
+
+        // 1、若删除的结点没有左子树和右子树
+        if ( (NULL == del_node->lc) && (NULL == del_node->rc)  )
+        {
+            // 为什么要先判断根结点，因为根结点的父节点找不到，结果为NULL，
+            // 1.1 可能只有一个根结点， 将root释放值为空
+            if (del_node == root)
+            {
+                root = NULL;
+                delete del_node;
+                del_node = NULL;
+
+                dec_size();
+                return;
+            }
+
+            // 1.2 非根结点，那就是叶子结点了， 将父节点指向删除结点的分支指向NULL
+            if  (del_node == parent_node->lc)
+                parent_node->lc = NULL;
+            else if (del_node == parent_node->rc)
+                parent_node->rc  = NULL;
+
+            // 释放结点
+            delete del_node;
+            del_node = NULL;
+            dec_size();
+        }
+
+        // 2、若删除结点只有左孩子，没有右孩子
+        else if ( (NULL != del_node->lc) && (NULL == del_node->rc) )
+        {
+            // 2.1 删除结点为根结点，则将删除结点的左孩子替代当前删除结点
+            if (del_node == root)
+            {
+                root = root->lc;
+            }
+            // 2.2 其他结点，将删除结点的左孩子作为父节点的左孩子
+            else
+            {
+                if (parent_node->lc == del_node)
+                    parent_node->lc = del_node->lc;
+                else if (parent_node->rc == del_node)
+                    parent_node->rc = del_node->lc;
+            }
+
+            delete del_node;
+            del_node = NULL;
+
+            dec_size();
+        }
+
+        // 3、若删除结点只有右孩子
+        else if ( (NULL == del_node->lc) && (NULL != del_node->rc) )
+        {
+            // 3.1 若为根结点
+            if (root == del_node)
+            {
+                root = root->rc;
+            }
+            else
+            {
+                if (del_node == parent_node->lc)
+                    parent_node->lc = del_node->rc;
+                else if (del_node == parent_node->rc)
+                    parent_node->rc = del_node->rc;
+            }
+
+            delete del_node;
+            del_node = NULL;
+
+            dec_size();
+        }
+
+        // 4、若删除结点既有左孩子，又有右孩子,需要找到删除结点的后继结点作为根结点
+        else if ( (NULL != del_node->lc) && (NULL != del_node->rc) )
+        {
+            node *successor_node = del_node->rc;
+            parent_node = del_node;
+
+            while (successor_node->lc)
+            {
+                parent_node = successor_node;
+                successor_node = successor_node->lc;
+            }
+
+            // 交换后继结点与当前删除结点的数据域
+            del_node->data = successor_node->data;
+            // 将指向后继结点的父节点的孩子设置后继结点的右子树
+            if (successor_node == parent_node->lc)
+                parent_node->lc = successor_node->rc;
+            else if (successor_node == parent_node->rc)
+                parent_node->rc = successor_node->rc;
+
+            // 删除后继结点
+            del_node = successor_node;
+            delete del_node;
+            del_node = NULL;
+
+            dec_size();
+        }
     }
 
     // 返回以proot为根结点的最小结点
@@ -450,43 +586,6 @@ public:
     // 查找某个结点为根节点的最结点
 
 private:
-
-    void remove_node(node *proot, int del_data)
-    {
-        node *find_node = query(del_data);
-        node *del_node = NULL;
-
-        if(NULL == find_node)
-        {
-            cout << "delete failed, may root is null or " << del_data << " not exist" << endl;
-            return;
-        }
-
-        // 1、若删除结点是叶子结点, 直接删除叶子结点，并置为空
-        if ( (NULL == proot->lc) && (NULL == proot->rc) )
-            del_node = proot;
-
-        // 2、当前删除结点仅包含一个子节点（左子结点或者右子结点）
-        else if (    (( NULL != proot->lc) && (NULL == proot->rc)) || 
-                    (( NULL == proot->lc) && (NULL == proot->rc)) 
-                )
-        {
-            // 2.1 仅有左子结点
-            if (( NULL != proot->lc) && (NULL == proot->rc))
-            {
-
-            }
-
-            // 2.2 仅有右子结点
-            else if (( NULL == proot->lc) && (NULL == proot->rc))
-            {
-
-            }
-        }
-
-    }
-
-
     //查找某个值
     node *query_node(node *proot, int key)
     {
