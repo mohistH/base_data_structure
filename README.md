@@ -1435,13 +1435,13 @@ private:
             return rotate_lr(pnode);
         }
         // RR型
-        if ( (-1 > pnode_bf) && (0 <= get_balance_factor(pnode->rc)) )
+        if ( (-1 > pnode_bf) && (0 >= get_balance_factor(pnode->rc)) )
         {
             return rotate_ll(pnode);
         }
         
         // RL型
-        if ( (-1 > pnode_bf) && (0 > get_balance_factor(pnode->rc)) )
+        if ( (-1 > pnode_bf) && (0 < get_balance_factor(pnode->rc)) )
         {
             return rotate_rl(pnode);
         }
