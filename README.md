@@ -1,4 +1,8 @@
 ### 更新说明:
+#### 1.7 更新时间：3-21-2019 22:38 重新提交平衡二叉树的完整算法（c++实现），修复：
+###### 1.7.1 左旋和右旋返回值值应该为旋转后的根结点
+##### 1.7.2 删除函数del_node2中，增加树的平衡判断
+##### 1.7.3 更新删除算法，当删除结点同时含有左右孩子时，应该先判断当前结点左右子树高度情况，从高度较高的子树中找替代当前结点的值
 #### 1.6 更新时间：2019-3-20 23:28 修正平衡二叉树插入结点时，新建结点的高度应该为1。
 #### 1.5 更新时间：2019-3-20 23:19 修正平衡二叉树删除RL型与RR型判断条件写反的情况
 #### 1.4 更新时间：2019-3-20 07:58 添加平衡二叉树(初版)，详见 下文
@@ -991,7 +995,7 @@ int main()
     return 0;
 }
 ```
-####3.平衡二叉树(初版) 2019-3-20 07:57
+####3.平衡二叉树 2019-3-21 22:37
 ```c++
 #include <iostream>
 
@@ -1057,6 +1061,8 @@ public:
     // 对应的形状是 RR型，即在结点右孩子插入结点。
     node *rotate_rr(node *pnode)
     {
+        node *ret_node = NULL;
+
         if (NULL != pnode)
         {
             // 保存失衡结点的右孩子
@@ -1072,15 +1078,19 @@ public:
             pnode->height = max(height(pnode->lc), height(pnode->rc)) + 1;
             loss_balance_node_rc->height = max( height( loss_balance_node_rc->lc), 
                                                 height(loss_balance_node_rc->rc)) + 1;
+
+            ret_node = loss_balance_node_rc;
         }
 
-        return pnode;
+        return ret_node;
     }
 
     // 右旋, 函数名是以插入结点后的形式命名的，这里是
     // 将新结点插入后，形成LL形状， 
     node *rotate_ll(node *pnode)
     {
+        node *ret_node = NULL;
+
         if  (NULL != pnode)
         {
             node *loss_balance_node_lc    = pnode->lc;
@@ -1095,12 +1105,15 @@ public:
 
                 // 更新高度
                 pnode->height   = max(height(pnode->lc), height(pnode->rc)) + 1;
+
                 loss_balance_node_lc->height = max( height(loss_balance_node_lc->lc),   
                                                     height(loss_balance_node_lc->rc)) + 1;
             }
+
+            ret_node = loss_balance_node_lc;
         }
 
-        return pnode;
+        return ret_node;
     }
 
 
@@ -1183,7 +1196,9 @@ public:
         if (NULL == root)
             return;
 
-        del_node(root, key);
+        // del_node(root, key);
+
+        root = del_node2(root, key);
     }
 
 
@@ -1210,6 +1225,7 @@ public:
     {
         if (NULL == root)
             return;
+
         pre_order(root);
     }
 
@@ -1250,6 +1266,37 @@ private:
             in_order(pnode->rc);    
         }
     }
+    
+    // 找到参数结点的父节点
+    node *get_parent_node(node *pnode)
+    {
+        if (NULL == pnode)
+        {
+            return pnode;
+        }
+
+        node *parent_node = NULL;
+        int key = pnode->data;
+        
+        node *cur_node = root;
+        while (cur_node)
+        {
+            if (key == cur_node->data)
+                break;
+            else if (key < cur_node->data)
+            {
+                parent_node = cur_node;
+                cur_node = cur_node->lc;
+            }
+            else if (key > cur_node->data)
+            {
+                parent_node = cur_node;
+                cur_node = cur_node->rc;
+            }
+        }
+
+        return parent_node;
+    }
 
 
     // 插入
@@ -1259,7 +1306,7 @@ private:
         // 为空，则创建结点
         if (NULL == pnode)
         {
-             pnode = new(std::nothrow) node;
+            pnode = new(std::nothrow) node;
             if (NULL != pnode)
             {
                 pnode->data = key;
@@ -1309,117 +1356,111 @@ private:
     }
 
 
-
-
     // 删除
-    node *del_node(node *pnode, int key)
+    node *del_node2(node *pnode, int key)
     {
-        // 当前结点
-        node *cur_node      = NULL;
-        // 找到当前结点的父节点
-        node *cur_node_pa   = NULL;
-
-
         if (NULL == pnode)
         {
             return pnode;
         }
 
         // 找 删除结点的位置
-        cur_node = pnode;
-        while (NULL != cur_node)
+        if (key < pnode->data)
         {
-            if (key == cur_node->data)
-                break;
-            else if (key < cur_node->data)
-            {
-                cur_node_pa = cur_node;
-                cur_node    = cur_node->lc;
-            }
-            else if (key > cur_node->data)
-            {
-                cur_node_pa = cur_node;
-                cur_node    = cur_node->rc;
-            }
+            pnode->lc = del_node2(pnode->lc, key);
         }
-
-        if (NULL == cur_node)
+        else if (key > pnode->data)
         {
-            return cur_node;
+            pnode->rc = del_node2(pnode->rc, key);
         }
-
-        // 找到删除结点，开始删除。
-
-        // 3.1 若删除结点同时存在左右孩子
-        if ( (NULL != cur_node->lc) && (NULL != cur_node->rc) )
-        {
-            // 找到删除结点的后继结点替代当前位置, 后继结点位于当前结点的右子树中
-            // 后继结点
-            node *successor_node      = cur_node->rc;
-            // 后继结点的父节点
-            node *successor_node_pa   = cur_node;
-
-            while (successor_node->lc)
-            {
-                successor_node_pa = successor_node;
-                successor_node = successor_node->lc;
-            }
-
-            // 将删除结点的值赋值给当前结点
-            cur_node->data = successor_node->data;
-
-            // 删除后继结点
-            if (NULL != successor_node_pa)
-            {
-                if (successor_node == successor_node_pa->lc)
-                    successor_node_pa->lc = NULL;
-                else if (successor_node == successor_node_pa->rc)
-                    successor_node_pa->rc = NULL;
-            }
-            
-            delete successor_node;
-            successor_node = NULL;
-        }
-
-        // 3.2 若只有左孩子
-        else if ((NULL != cur_node->lc) && (NULL == cur_node->rc) )
-        {
-            // 指向需要删除的结点
-            node *del_node_tmp = cur_node->lc;
-            pnode->lc = NULL;
-
-            delete del_node_tmp;
-            del_node_tmp = NULL;
-        }
-        // 3.3 若只有右孩子
-        else if ( (NULL == cur_node->lc) && (NULL != cur_node->rc))
-        {
-            // 指向需要删除的结点
-            node *del_node_tmp = cur_node->rc;
-            cur_node->rc = NULL;
-
-            delete del_node_tmp;
-            del_node_tmp = NULL;
-        }
-        // 3.4 删除的是叶子结点
         else
         {
-            if (NULL != cur_node_pa)
-            {
-                if (cur_node == cur_node_pa->lc)
-                    cur_node_pa->lc = NULL;
-                else if (cur_node == cur_node->rc)
-                    cur_node->rc = NULL;
-            }
-            // 说明只有根结点
-            else
-                root = NULL;
-                
+            // 找到删除结点，
 
-            delete cur_node;
-            cur_node = NULL;
+            // 3.1 若删除结点同时存在左右孩子
+            if ( (NULL != pnode->lc) && (NULL != pnode->rc) )
+            {
+                // 需要从左右子树中最高的那棵树开始删除
+
+                // 从左子树中开始删除
+                if (height(pnode->lc) > height(pnode->rc))
+                {
+                    // 找到左子树中最大的结点，替换当前结点
+                    node *pre_node = get_max(pnode->lc);
+
+                    // 将当前结点的值替换为前驱结点的值
+                    pnode->data = pre_node->data;
+
+                    // 删除左子树中最大的结点
+                    pnode->lc = del_node2(pnode->lc, pnode->data);
+                }
+
+                // 删除的结点从右子树中开始找
+                else
+                {
+                    // 找到后继结点
+                    node *successor_node = get_min(pnode->rc);
+
+                    // 将删除结点的值赋值给当前结点
+                    pnode->data = successor_node->data;
+
+                    // 删除后继结点中指定结点的值
+                    pnode->rc = del_node2(pnode->rc, pnode->data);
+                }
+                
+            }
+
+            // 3.2 若只有左孩子
+            else if ((NULL != pnode->lc) && (NULL == pnode->rc) )
+            {
+                // 指向需要删除的结点
+                node *del_node_tmp = pnode->lc;
+
+                // 将孩子的值赋值给删除结点
+                pnode->data = del_node_tmp->data;
+                // 将父节点指向孩子结点的分支设置为NULL
+                pnode->lc = NULL;
+
+                delete del_node_tmp;
+                del_node_tmp = NULL;
+            }
+            // 3.3 若只有右孩子
+            else if ( (NULL == pnode->lc) && (NULL != pnode->rc))
+            {
+                // 指向需要删除的结点
+                node *del_node_tmp = pnode->rc;
+                pnode->data = del_node_tmp->data;
+                // 将分支设置为NULL
+                del_node_tmp->rc = NULL;
+
+                delete del_node_tmp;
+                del_node_tmp = NULL;
+            }
+            // 3.4 删除的是叶子结点
+            else
+            {
+
+                node *pnode_pa = get_parent_node(pnode);
+                if (NULL != pnode_pa)
+                {
+                    if (pnode == pnode_pa->lc)
+                        pnode_pa->lc = NULL;
+                    else if (pnode == pnode_pa->rc)
+                        pnode_pa->rc = NULL;
+                }
+                // 说明只有根结点
+                else
+                    root = NULL;
+                    
+
+                delete pnode;
+                pnode = NULL;
+            }
         }
 
+        // 为了保证树的平衡
+        if (NULL == pnode)
+            return pnode;
 
         // ------- 删除节点后，需要做平衡
         pnode->height = max(height(pnode->lc), height(pnode->rc)) + 1;
@@ -1430,7 +1471,7 @@ private:
         // LL型
         if ( (1 < pnode_bf) && (0 <= get_balance_factor(pnode->lc)) )
         {
-            return rotate_rr(pnode);
+            return rotate_ll(pnode);
         }
         // LR型
         if ( (1 < pnode_bf) && (0 > get_balance_factor(pnode->lc)) )
@@ -1440,7 +1481,7 @@ private:
         // RR型
         if ( (-1 > pnode_bf) && (0 >= get_balance_factor(pnode->rc)) )
         {
-            return rotate_ll(pnode);
+            return rotate_rr(pnode);
         }
         
         // RL型
@@ -1451,12 +1492,6 @@ private:
 
         return pnode;
     }
-
-
-
-
-
-
 
 
 private:
