@@ -18,6 +18,8 @@
 
 
 ### 更新说明:
+#### 1.9 增加二叉树的高度获取方法（递归） 
+	https://www.cnblogs.com/pandamohist/p/10581532.html
 #### 1.8 更新时间：3-22-2019 21:55 补充平衡二叉树的 层次遍历（队列 与 数组实现）
 #### 1.7 更新时间：3-21-2019 22:38 重新提交平衡二叉树的完整算法（c++实现），修复：
 ###### 1.7.1 左旋和右旋返回值值应该为旋转后的根结点
@@ -593,7 +595,26 @@ public:
         return (true == is_find)?  parent_node :  NULL; 
     }
 
-    // 查找某个结点为根节点的最结点
+	// 3-22-2019 新增
+    int get_tree_deepth()
+    {
+        return get_tree_deepth(root);
+    }
+
+
+private:
+	// 3-22-2019 新增
+    // 返回树的高度，采用 后序遍历的思想
+    int get_tree_deepth(node *pnode)
+    {
+        if (NULL == pnode)
+            return 0;
+
+        int left_h = get_tree_deepth(pnode->lc) ;
+        int right_h = get_tree_deepth(pnode->rc);
+
+        return (left_h > right_h) ? (1 + left_h) : (1 + right_h);
+    }
 
 private:
     //查找某个值
