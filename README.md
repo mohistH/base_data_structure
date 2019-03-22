@@ -1,4 +1,24 @@
+
+##欢迎指正 
+# base_data_structure
+	记录常用的数据结构:
+		排序
+		单向链表
+		双向链表
+		栈
+		队列
+		二叉树
+		平衡二叉树（AVL树）
+		红黑树
+		
+		c++实现
+`欢迎指正`
+
+
+
+
 ### 更新说明:
+#### 1.8 更新时间：3-22-2019 21:55 补充平衡二叉树的 层次遍历（队列 与 数组实现）
 #### 1.7 更新时间：3-21-2019 22:38 重新提交平衡二叉树的完整算法（c++实现），修复：
 ###### 1.7.1 左旋和右旋返回值值应该为旋转后的根结点
 ##### 1.7.2 删除函数del_node2中，增加树的平衡判断
@@ -16,7 +36,6 @@
 
 #### 自己实现vector动态数组（c++）
 	##仅实现了部分功能， 后续更新##
-	## 欢迎指正##	
 
 ```c++
 #ifndef _my_vector
@@ -249,22 +268,6 @@ int main()
 
 
 
-
-
-
-# base_data_structure
-	记录常用的数据结构:
-		排序
-		单向链表
-		双向链表
-		栈
-		队列
-		二叉树
-		平衡二叉树（AVL树）
-		红黑树
-		
-		c++实现
-`欢迎指正`
 
 #### 1.二叉树
 ##### 1.1 初步实现二叉树的基本功能，包括：添加结点、查找结点、3中遍历结点、释放树
@@ -1229,6 +1232,77 @@ public:
         pre_order(root);
     }
 
+	// ----------- 3-22-2019 -------- 新增------	// 层次遍历树 （使用队列）
+    void layer_order()
+    {
+
+        cout << endl << endl << "层次遍历,是用队列完成" << endl;
+        queue<node*> vq;
+
+        if (NULL != root)
+            vq.push(root);
+        
+        // 队列不为空，继续遍历
+        while (false == vq.empty())
+        {
+            cout << vq.front()->data << " -> ";
+
+            // 若左孩子不为空，则继续加入队列
+            if ( NULL != vq.front()->lc )
+            {
+                vq.push(vq.front()->lc);
+            }
+
+            // 若右孩子不为空，则继续入队
+            if (NULL  != vq.front()->rc)
+                vq.push(vq.front()->rc);
+        
+            // 已经遍历输出的元素，出队
+            vq.pop();
+        }
+
+        cout << endl << endl;
+    }
+ 
+	// ----------- 3-22-2019 -------- 新增------
+    // 层次遍历，不是用队列，使用数组完成
+    void layer_order_arr()
+    {
+        cout << endl << endl << " 层次遍历，不是用队列，使用数组完成 " << endl;
+
+        // 定义指针数组的大小
+        const int arr_len = 100;
+        // 保存结点指针
+        node *arr[arr_len] = {0};
+
+        // 添加元素索引，添加到数组时使用
+        int in_index = 0;
+
+        // 输出元素索引，输出元素使用
+        int out_index = 0;
+
+        // 添加结点
+        if (NULL != root)
+            arr[in_index++] = root;
+
+        // 若 添加元素索引大于输出元素索引，说明数组中还有没有输出的元素
+        while ( in_index > out_index)
+        {
+            // 输出
+            cout << arr[out_index]->data << " -> ";
+
+            // 若左子树不为空，将其添加到数组
+            if (NULL != arr[out_index]->lc)
+                arr[in_index++] = arr[out_index]->lc;
+            
+            // 若右子树不为空，将其添加到数组
+            if (NULL != arr[out_index]->rc)
+                arr[in_index++] = arr[out_index]->rc;
+            
+            // 输出索引指向数组的下一个元素
+            out_index++;
+        }
+    }
 
 
 private:
