@@ -18,6 +18,7 @@
 
 
 ### 更新说明:
+#### 2.1 更新时间：3-23-2019 07:26 新增二叉树的深度优先遍历方法（栈）实现
 #### 2.0 更新时间：3-22-2019 23:00 增加平衡二叉树的判定方法（递归）,详见平衡二叉树代码
 #### 1.9 更新时间：3-22-2019 增加二叉树的高度获取方法（递归） 
 
@@ -363,6 +364,37 @@ public:
     void last_order()
     {
         last_order_traverse(root);
+    }
+    
+     // 3-23-2019 07:11 新增深度优先遍历
+    void dfs()
+    {
+        cout <<  endl << endl << "深度优先遍历" << endl;
+
+        stack<node*> vs;
+
+        // 思路： 先将根结点入栈，再将其右孩子入栈，再将其左孩子入栈。一次遍历输出
+        if (NULL != root)
+            vs.push(root);
+        
+
+        node *tmp_node = NULL;
+        while (false == vs.empty())
+        {
+            tmp_node = vs.top();
+            cout << tmp_node->data << " -> ";
+
+            // 弹出已经输出的元素
+            vs.pop();
+
+            // 将其右孩子入栈
+            if (NULL != tmp_node->rc)
+                vs.push(tmp_node->rc);
+            
+            // 再将其左孩子入栈
+            if (NULL != tmp_node->lc)
+                vs.push(tmp_node->lc);
+        }
     }
 
     /*
