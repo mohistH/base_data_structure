@@ -18,6 +18,7 @@
 
 
 ### 更新说明:
+#### 2.0 更新时间：3-22-2019 23:00 增加平衡二叉树的判定方法（递归）,详见平衡二叉树代码
 #### 1.9 更新时间：3-22-2019 增加二叉树的高度获取方法（递归） 
 
 	https://www.cnblogs.com/pandamohist/p/10581532.html
@@ -1325,6 +1326,33 @@ public:
             // 输出索引指向数组的下一个元素
             out_index++;
         }
+    }
+    
+    // 3-22-2019 23:00 增加
+    // 判断是否为平衡二叉树,若是，则返回树的高度
+    // false - 不是平衡二叉树，true-是平衡二叉树
+    bool is_avl_tree(node *pnode, int &deepth)
+    {
+        if ( NULL == pnode)
+        {
+            deepth = 0;
+            return true;
+        }
+
+        int left_h = 0;
+        int right_h = 0;
+
+        if (is_avl_tree(pnode->lc, left_h) && is_avl_tree(pnode->rc, right_h))
+        {
+            int diff = abs(left_h - right_h);
+            if (1 < diff)
+                return false;
+            deepth = 1 + ( (left_h > right_h) ? left_h : right_h);
+
+            return true;
+        }
+
+        return false;
     }
 
 
