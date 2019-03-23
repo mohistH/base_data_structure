@@ -18,6 +18,7 @@
 
 
 ### 更新说明:
+#### 2.2 更新时间：3-23-2019 08:31 新增二叉搜索树的判定方法
 #### 2.1 更新时间：3-23-2019 07:26 新增二叉树的深度优先遍历方法（栈）实现
 #### 2.0 更新时间：3-22-2019 23:00 增加平衡二叉树的判定方法（递归）,详见平衡二叉树代码
 #### 1.9 更新时间：3-22-2019 增加二叉树的高度获取方法（递归） 
@@ -634,6 +635,43 @@ public:
     int get_tree_deepth()
     {
         return get_tree_deepth(root);
+    }
+    
+    
+    // 3-23-2019 08:31 新增二叉树的判定方法
+    // 二叉树的判定方法
+    // true - 是
+    // false - 不是
+    bool is_bst()
+    {
+        int min = 0;
+
+        return is_bst(root, min);
+    }
+
+private:
+
+    // 采用中序遍历的思路
+    bool is_bst(node *pnode, int &last_val)
+    {
+        if (NULL == pnode)
+            return true;
+        
+        // 开始遍历左子树
+        if (!is_bst(pnode->lc, last_val))
+            return false;
+        
+        // 因为左孩子的结点值比当前结点的值还要小。否则 就不是 二叉搜索树
+        if (last_val > pnode->data)
+            return false;
+
+        last_val = pnode->data;
+
+        // 遍历右子树
+        if (!is_bst(pnode->rc, last_val))
+            return false;
+
+        return true;
     }
 
 
